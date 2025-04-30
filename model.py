@@ -6,11 +6,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
 mat = scipy.io.loadmat('Xtrain.mat')
-
 data = mat['Xtrain']
-# print(data.shape)
-# print(data[0])
-
 
 scaler = MinMaxScaler()
 scaled_data = scaler.fit_transform(data)
@@ -19,8 +15,6 @@ scaled_data = scaler.fit_transform(data)
 train_data = scaled_data[:800]
 test_data = scaled_data[800:]
 
-
-# ---- Parameters ----
 window_size = 50  # number of past steps to use
 predict_length = 200
 
@@ -35,23 +29,28 @@ X = X.reshape((X.shape[0], X.shape[1], 1))
 
 model = Sequential()
 model.add(LSTM(64, activation='relu', input_shape=(window_size, 1)))
-model.add(Dense(predict_length))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(1)) 
 model.compile(optimizer='adam', loss='mse')
 
 model.fit(X, y, epochs=20, batch_size=32)
 
-last_seq = train_data[-window_size:].reshape(1, window_size, 1)
-prediction = model.predict(last_seq)  # shape: (1, 200)
+# Predicting next 200 values 1 value at a time
+current_seq = train_data[-window_size:].flatten().tolist()
+predictions = []
+
+for _ in range(predict_length):
+    input_seq = np.array(current_seq[-window_size:]).reshape(1, window_size, 1)
+    next_pred = model.predict(input_seq)[0][0] 
+    predictions.append(next_pred)
+    current_seq.append(next_pred)
 
 print("Predicted next 200 values:")
-print(prediction)
+print(predictions)
 
 from sklearn.metrics import mean_squared_error
+true_test = test_data[:200].flatten()
+predicted = np.array(predictions).flatten()
 
-
-predicted = prediction.flatten()     # shape: (200,)
-       # your true test array of shape (200,)
-
-# ---- Compute MSE ----
-mse = mean_squared_error(test_data, predicted)
+mse = mean_squared_error(true_test, predicted)
 print("Mean Squared Error:", mse)
