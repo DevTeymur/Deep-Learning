@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (
+from tensorflow.keras.models import Model  # type: ignore
+from tensorflow.keras.layers import (  # type: ignore
     Input, Dense, LayerNormalization, Dropout,
     MultiHeadAttention, Add
 )
