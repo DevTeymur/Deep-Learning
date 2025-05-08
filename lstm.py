@@ -1,21 +1,22 @@
+import time
 import scipy.io
+import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
+
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import LSTM, Dense # type: ignore
 
 from warnings import filterwarnings
 filterwarnings('ignore')
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
-import time
-
 mat = scipy.io.loadmat('Xtrain.mat')
 data = mat['Xtrain']
+print(len(data), data.shape)
 
 scaler = MinMaxScaler()
 scaled_data = scaler.fit_transform(data)
@@ -32,7 +33,9 @@ def reshape_data(win_size, train_data=train_data, predict_length=predict_length)
     for i in range(len(train_data) - win_size - predict_length + 1):
         X.append(train_data[i:i + win_size])
         # y.append(train_data[i + win_size:i + win_size + predict_length])
-        y.append(train_data[i])
+        # y.append(train_data[i])
+        y.append(train_data[i + win_size])  # Not a range
+
     X = np.array(X)
     y = np.array(y)
     X = X.reshape((X.shape[0], X.shape[1], 1))
@@ -49,7 +52,7 @@ def compile_and_predict(win_size, logs=False):
     model.add(Dense(1)) 
     model.compile(optimizer='adam', loss='mse')
 
-    model.fit(X, y, epochs=10, batch_size=32, verbose=0)
+    model.fit(X, y, epochs=50, batch_size=32, verbose=0)
     print("done")
 
     print(f"Predicting next {predict_length} values...", end=" ")
@@ -69,7 +72,6 @@ def compile_and_predict(win_size, logs=False):
 
 def compute_metrics(predictions, win_size, test_data=test_data):
     print("Computing metrics...", end=" ")
-    # Compute Mean Squared Error
     true_test = test_data[:200].flatten()
     predicted = np.array(predictions).flatten()
 
@@ -83,12 +85,20 @@ def compute_metrics(predictions, win_size, test_data=test_data):
 
 
 def get_time():
+    """This function returns the current time in day-month hour:minute format for saving the results
+
+    Returns:
+        time: Current time in day-month hour:minute format
+    """
     # Take time in day/monthh hour:minute format
     current_time = time.localtime()
     return time.strftime("%d-%m_%H:%M", current_time)
 
 
 def plot_results(win_sizes, mses, maes):
+    """
+    Plots the MSE and MAE for different window sizes.
+    """
     fig, ax1 = plt.subplots()
 
     color1 = 'tab:blue'
@@ -109,6 +119,9 @@ def plot_results(win_sizes, mses, maes):
     plt.close()
 
 def plot_real_vs_pred(predictions, win_size):
+    """
+    Functio to plot the predicted values vs the true values for the first 200 values of the test set.
+    """
     predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
     true_test = scaler.inverse_transform(test_data[:200].reshape(-1, 1))
 
@@ -123,10 +136,9 @@ def plot_real_vs_pred(predictions, win_size):
     plt.close()
 
 
-window_sizes = np.arange(1, 200, 20)
+window_sizes = np.arange(40, 71, 5)
+print("Window sizes:", window_sizes)
 win_sizes, mses, maes = [], [], []
-window_sizes = [50]
-
 
 for i in window_sizes:
     preds = compile_and_predict(i, logs=False)
@@ -136,8 +148,8 @@ for i in window_sizes:
     maes.append(mae)
     plot_real_vs_pred(preds, i)
 
-# plot_results(win_sizes, mses, maes)
-
+# Plot the metrics
+plot_results(win_sizes, mses, maes)
 
 # Save the results as csv file
 results = pd.DataFrame({'Window Size': win_sizes, 'MSE': mses, 'MAE': maes})

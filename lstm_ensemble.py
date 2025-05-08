@@ -1,13 +1,15 @@
 # LSTM Sequence-to-Sequence + Ensemble Forecasting
-
 import scipy.io
 import numpy as np
+
 import matplotlib.pyplot as plt
+
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, LSTM, Dense, TimeDistributed, RepeatVector
+from tensorflow.keras.models import Model  # type: ignore
+from tensorflow.keras.layers import Input, LSTM, Dense, TimeDistributed, RepeatVector  # type: ignore
 
 
 mat = scipy.io.loadmat('Xtrain.mat')
@@ -19,7 +21,8 @@ scaled_data = scaler.fit_transform(data)
 train_data = scaled_data[:800]
 test_data = scaled_data[800:]
 
-window_size = 50
+# Using the one of the optimal window sizes from the previous LSTM model
+window_size = 60
 predict_length = 200
 
 X, y = [], []
@@ -41,7 +44,7 @@ def build_seq2seq_model(input_shape, output_length):
     return Model(inputs, x)
 
 
-n_models = 5
+n_models = 3
 models = []
 predictions = []
 
