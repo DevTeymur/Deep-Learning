@@ -2,12 +2,12 @@ import scipy.io
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers, models # type: ignore
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 # --- Load and preprocess data ---
-train_data = scipy.io.loadmat('Xtrain (1).mat')['Xtrain'].flatten().reshape(-1, 1)
+train_data = scipy.io.loadmat('Xtrain.mat')['Xtrain'].flatten().reshape(-1, 1)
 test_data = scipy.io.loadmat('Xtest.mat')['Xtest'].flatten().reshape(-1, 1)
 
 scaler = MinMaxScaler()
@@ -66,9 +66,9 @@ predictions = np.clip(predictions, 0, 1)  # Ensure values are within [0,1]
 predictions_inv = scaler.inverse_transform(predictions)
 y_test_inv = scaler.inverse_transform(y_test.reshape(-1, 1))
 
-mse = mean_squared_error(y_test_inv, predictions_inv)
-mae = mean_absolute_error(y_test_inv, predictions_inv)
-print(f"✅ MSE: {mse:.2f} | MAE: {mae:.2f}")
+mse = mean_squared_error(y_test, predictions)
+mae = mean_absolute_error(y_test, predictions)
+print(f"✅ MSE: {mse:.4f} | MAE: {mae:.4f}")
 
 # --- Plot Results ---
 plt.figure(figsize=(12, 6))

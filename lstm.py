@@ -9,7 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import LSTM, Dense # type: ignore
+from tensorflow.keras.layers import LSTM, Dense, Dropout # type: ignore
 
 from warnings import filterwarnings
 filterwarnings('ignore')
@@ -19,11 +19,16 @@ data = mat['Xtrain']
 print(len(data), data.shape)
 
 scaler = MinMaxScaler()
-scaled_data = scaler.fit_transform(data)
 
-# 800 for train, 200 for test
-train_data = scaled_data[:800]
-test_data = scaled_data[800:]
+# scaled_data = scaler.fit_transform(data)
+
+# # 800 for train, 200 for test
+# train_data = scaled_data[:800]
+# test_data = scaled_data[800:]
+
+# Train test data 9th May after test set release
+train_data = scaler.fit_transform(data)
+test_data = scaler.fit_transform(scipy.io.loadmat('Xtest.mat')['Xtest'])
 
 predict_length = 200
 
@@ -49,10 +54,12 @@ def compile_and_predict(win_size, logs=False):
     model = Sequential()
     model.add(LSTM(64, activation='relu', input_shape=(win_size, 1)))
     model.add(Dense(32, activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(16, activation='relu'))
     model.add(Dense(1)) 
     model.compile(optimizer='adam', loss='mse')
 
-    model.fit(X, y, epochs=50, batch_size=32, verbose=0)
+    model.fit(X, y, epochs=55, batch_size=32, verbose=0)
     print("done")
 
     print(f"Predicting next {predict_length} values...", end=" ")
@@ -139,6 +146,7 @@ def plot_real_vs_pred(predictions, win_size):
 window_sizes = np.arange(40, 71, 5)
 print("Window sizes:", window_sizes)
 win_sizes, mses, maes = [], [], []
+window_sizes = [50]
 
 for i in window_sizes:
     preds = compile_and_predict(i, logs=False)
@@ -149,9 +157,9 @@ for i in window_sizes:
     plot_real_vs_pred(preds, i)
 
 # Plot the metrics
-plot_results(win_sizes, mses, maes)
+# plot_results(win_sizes, mses, maes)
 
 # Save the results as csv file
-results = pd.DataFrame({'Window Size': win_sizes, 'MSE': mses, 'MAE': maes})
-results.to_csv(f'results/LSTM_results_{get_time()}.csv', index=False)
+# results = pd.DataFrame({'Window Size': win_sizes, 'MSE': mses, 'MAE': maes})
+# results.to_csv(f'results/LSTM_results_{get_time()}.csv', index=False)
 

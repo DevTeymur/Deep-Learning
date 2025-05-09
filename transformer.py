@@ -22,6 +22,8 @@ scaled_data = scaler.fit_transform(data)
 train_data = scaled_data[:800]
 test_data = scaled_data[800:]
 
+mat = scipy.io.loadmat('Xtrain.mat')['Xtrain']
+
 window_size = 50
 predict_length = 200
 
