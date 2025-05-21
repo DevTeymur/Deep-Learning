@@ -9,14 +9,20 @@ def get_dataset_name(filename_with_dir):
     return dataset_name
 
 def extract_label(filename):
+    encode_mapping = {
+        'rest': 1,
+        'motor': 2,
+        'memory': 3,
+        'math': 4,
+    }
     if 'rest' in filename:
-        return 'rest'
+        return encode_mapping['rest']
     elif 'motor' in filename:
-        return 'motor'
+        return encode_mapping['motor']
     elif 'memory' in filename:
-        return 'memory'
+        return encode_mapping['memory']
     else:
-        return 'math'
+        return encode_mapping['math']
 
 def load_all_data(folder_path, logs=False):
     X = []
@@ -33,6 +39,8 @@ def load_all_data(folder_path, logs=False):
                 print(f"Data shape: {data.shape}, label: {label}") if logs else None
                 X.append(data)       # shape (248, 35624)
                 y.append(label)      # 'motor', 'rest', etc.
+    X = np.array(X)  # shape (n_samples, 248, 35624)
+    y = np.array(y)  # shape (n_samples,)
     return X, y
 
 
