@@ -10,10 +10,10 @@ def get_dataset_name(filename_with_dir):
 
 def extract_label(filename):
     encode_mapping = {
-        'rest': 1,
-        'motor': 2,
-        'memory': 3,
-        'math': 4,
+        'rest': 0,
+        'motor': 1,
+        'memory': 2,
+        'math': 3,
     }
     if 'rest' in filename:
         return encode_mapping['rest']

@@ -11,7 +11,7 @@ def z_score_normalize(data):
 
 def downsample(data, step=8):
     # data: shape (248, T)
-    return data[:, ::step]  # keep every 8th column
+    return np.array(data[:, ::step])  # keep every 8th column
 
 if __name__ == "__main__":
     # Specify the folder name and load the data. (Don't push data folders to GitHub!!!)
