@@ -37,11 +37,10 @@ def extract_subject_id(filename: str) -> str:
                 return parts[task_len]
     raise ValueError(f"Unable to extract subject ID from filename: {filename}")
 
-def normalize_and_downsample(matrix: np.ndarray, downsample_factor: int = 10) -> np.ndarray:
-    scaler = StandardScaler()
-    normalized = scaler.fit_transform(matrix.T).T
-    downsampled = normalized[:, ::downsample_factor]
+def downsample(matrix: np.ndarray, downsample_factor: int = 10) -> np.ndarray:
+    downsampled = matrix[:, ::downsample_factor]
     return downsampled
+
 
 def load_grouped_by_subject(folder_path, downsample_factor=10):
     subject_data = defaultdict(list)
@@ -59,7 +58,7 @@ def load_grouped_by_subject(folder_path, downsample_factor=10):
             with h5py.File(file_path, 'r') as f:
                 dataset_name = list(f.keys())[0]
                 matrix = f[dataset_name][()]
-                processed = normalize_and_downsample(matrix, downsample_factor)
+                processed = downsample(matrix, downsample_factor)
                 subject_data[subject_id].append(processed.T)
                 subject_labels[subject_id].append(label)
 
@@ -222,8 +221,12 @@ if best_model_state is not None:
 
 # --- Final Evaluation ---
 test_acc, test_preds, test_targets = evaluate_model(model, test_loader, device)
-print(f"\nTest Accuracy: {test_acc:.4f}")
-print("\nClassification Report:\n")
+
+print("\n" + "="*40)
+print(f"🎯 Final Test Accuracy: {test_acc:.4f}")
+print("="*40 + "\n")
+
+print("📊 Classification Report:\n")
 print(classification_report(test_targets, test_preds, target_names=LABEL_NAMES))
 
 cm = confusion_matrix(test_targets, test_preds)
