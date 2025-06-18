@@ -200,3 +200,6 @@ plt.xlabel("Epoch")
 plt.ylabel("Accuracy")
 plt.legend()
 plt.show()
+
+test_acc, test_preds, test_targets = evaluate_model(model, test_loader, device)
+print(f"🧪 Test Accuracy: {test_acc:.4f}")
